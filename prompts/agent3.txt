@@ -1,0 +1,21 @@
+Using the JSON stats provided, write an analytical Markdown report.
+
+Total posts: {total_posts}
+
+Sentiment distribution:
+{sentiment_json}
+
+Average sentiment by location:
+{demo_json}
+
+Top topics:
+{top_topics_json}
+
+Sentiment-threshold note: {threshold_note}
+
+Structure:
+1. Executive summary
+2. Sentiment overview
+3. Demographic insights
+4. Topic correlations
+5. Key takeaways

@@ -1,0 +1,4 @@
+Rate the sentiment of the post on a scale -2 (strongly negative) to +2 (strongly positive).
+Return **exactly**: {"score": <integer>}
+Post ID: {post_id}
+Content: """{content}"""
