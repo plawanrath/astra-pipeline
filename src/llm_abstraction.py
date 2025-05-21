@@ -73,9 +73,8 @@ class HFClient(BaseLLM):
 # ---------- factory --------------------------------------------------------- #
 
 CLIENTS = {
-    "gpt-4":      OpenAIClient,
-    "gpt-3.5":    OpenAIClient,
-    "openai":     OpenAIClient,
+    "gpt-4o":      OpenAIClient,
+    "gpt-o4-mini-high":    OpenAIClient,
     "local":      HFClient,
     # add more aliases -> class
 }
