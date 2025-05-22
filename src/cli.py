@@ -15,8 +15,4 @@ def run(**kwargs):
     ctx = {"config": {**kwargs,
                       "OPENAI_API_KEY": os.getenv("OPENAI_API_KEY"),
                       "TWITTER_BEARER": os.getenv("TWITTER_BEARER")}}
-    graph = build_graph()
-    graph.invoke(ctx)
-
-if __name__ == "__main__":
-    run()  # pylint: disable=no-value-for-parameter
+    graph = bui
