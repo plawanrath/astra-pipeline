@@ -25,6 +25,7 @@ WORKDIR /app
 
 # ── Python deps ──────────────────────────────────────────────────────────────
 COPY --chown=astra:astra requirements.txt .
+COPY --chown=astra:astra .env .env
 RUN pip install --upgrade pip && \
     pip install -r requirements.txt && \
     # extra libs for offline datasets / hydration

@@ -7,7 +7,7 @@ import json, logging, time
 from pathlib import Path
 from collections import Counter
 import pandas as pd
-from llm_abstraction import get_client
+from ..llm_abstraction import get_client
 
 PROMPT_TMPL = Path("prompts/agent3.txt").read_text()
 

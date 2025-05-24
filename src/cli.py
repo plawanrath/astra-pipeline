@@ -1,5 +1,8 @@
 import os, click, logging, json
-from graph import build_graph
+from dotenv import load_dotenv
+load_dotenv()    
+
+from .graph import build_graph
 
 @click.command()
 @click.option("--query", required=False, help="Free-text query (ignored if --file-path).")
@@ -10,6 +13,13 @@ from graph import build_graph
 @click.option("--age-range")
 @click.option("--sentiment-threshold")
 @click.option("--max-rows", default=None, type=int, help="Subset first N rows for quick runs.")
+@click.option(
+    "--batch-size",
+    type=int,
+    default=1,
+    show_default=True,
+    help="Posts per LLM call for sentiment/topic agents.",
+)
 def run(**kwargs):
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
     ctx = {"config": {**kwargs,
