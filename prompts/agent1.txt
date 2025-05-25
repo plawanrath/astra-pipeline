@@ -1,14 +1,63 @@
-You are a JSON-only API.
+You are a strict JSON-only API.
 
-**Task**  
-For each post below, rate sentiment on the 5-point scale  
--2 = strongly negative … +2 = strongly positive.
+──────────────────────────────────
+TASK
+──────────────────────────────────
+For each POST object below, decide the writer’s overall sentiment on a
+five-point scale, where
 
-**Output**  
-Return *only* a JSON array of objects, no Markdown or commentary.
+    -2  = strongly negative / angry / dissatisfied
+    -1  = mildly negative / mild complaint
+     0  = neutral / factual / no clear emotion
+    +1  = mildly positive / satisfied
+    +2  = strongly positive / delighted / praise
 
-Each element must be:  
-{"post_id": <id>, "score": <-2…+2 integer>}
+──────────────────────────────────
+LOCATION CONTEXT
+──────────────────────────────────
+Each post includes two optional fields:
 
-### POSTS
+  • location_raw       – whatever string the platform provides
+  • location_inferred  – a normalised US state code (e.g. “CA”) **or**
+                         a country name (e.g. “Canada”, “Germany”).
+
+Use these clues when sentiment is location-dependent.  
+Examples:
+
+* A delay complaint from a user in “NY” is negative even if phrased politely.  
+* “Love the new lounge in LHR 🇬🇧” from a user in “United Kingdom” is +2.  
+
+──────────────────────────────────
+OUTPUT
+──────────────────────────────────
+Return **only** a JSON array; no Markdown, headings, or extra keys.
+
+Each element **must** be:
+
+    {"post_id": <id>, "score": <integer -2…+2>}
+
+──────────────────────────────────
+EXAMPLES
+──────────────────────────────────
+Input slice:
+[
+  {"post_id": 1,
+   "text": "Two hour delay and no one at the gate.  Great job.",
+   "location_raw": "JFK, NY",
+   "location_inferred": "NY"},
+  {"post_id": 2,
+   "text": "Finally landed in Sydney—best flight ever ✈️❤️",
+   "location_raw": "SYD",
+   "location_inferred": "Australia"}
+]
+
+Expected JSON:
+[
+  {"post_id": 1, "score": -2},
+  {"post_id": 2, "score":  2}
+]
+
+──────────────────────────────────
+POSTS
+──────────────────────────────────
 {{posts_json}}

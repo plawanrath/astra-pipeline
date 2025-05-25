@@ -20,7 +20,15 @@ def run(state: dict) -> dict:
 
     out, tic = [], time.perf_counter()
     for i in range(0, len(rows), batch):
-        chunk  = rows[i : i + batch]
+        chunk = [
+            {
+                "post_id": r["post_id"],
+                "text":    r["content"],
+                "location_raw": r.get("location", ""),
+                "location_inferred": r.get("location_inferred", "")
+            }
+            for r in rows[i : i + batch]
+        ]
         prompt = PROMPT_TMPL.replace("{{posts_json}}", json.dumps(chunk))
         try:
             parsed = safe_extract(llm.generate(prompt, temperature=0.0))
