@@ -34,7 +34,7 @@ def run(state: dict) -> dict:
         chunk  = rows[i : i + batch]
         prompt = PROMPT_TMPL.replace("{{posts_json}}", json.dumps(chunk))
         try:
-            parsed = safe_extract(llm.generate(prompt, temperature=0.0))
+            parsed = safe_extract(llm.generate(prompt, temperature=0.3))
             out.extend(_norm(r, c["post_id"]) for r, c in zip(parsed, chunk))
         except Exception as e:
             logging.warning("Topics batch error (%s); default []", e)

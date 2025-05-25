@@ -152,13 +152,13 @@ class LlamaMetaClient(BaseLLM):
 
 # ── factory + alias table ──────────────────────────────────────────────────
 CLIENTS = {
-    "gpt-4o":OpenAIClient,"gpt-4o-mini":OpenAIClient,"gpt-4":OpenAIClient,
+    "gpt-4o":OpenAIClient,"gpt-4o-mini":OpenAIClient,"gpt-4":OpenAIClient, "gpt-4.1":OpenAIClient, "o4-mini": OpenAIClient,
     "gpt-3.5":OpenAIClient,"openai":OpenAIClient,
     "local":HFClient,"hf":HFClient,
     "llama-meta":LlamaMetaClient
 }
 ALIASES = {
-    "mini":"gpt-4o-mini","4o":"gpt-4o",
+    "mini":"gpt-4o-mini","4o":"gpt-4o","4.1":"gpt-4.1", "o4-mini": "o4-mini",
     "llama":"Llama-4-Maverick-17B-128E-Instruct-FP8",
 }
 _instances: Dict[str,BaseLLM]={}

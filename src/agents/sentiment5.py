@@ -31,7 +31,7 @@ def run(state: dict) -> dict:
         ]
         prompt = PROMPT_TMPL.replace("{{posts_json}}", json.dumps(chunk))
         try:
-            parsed = safe_extract(llm.generate(prompt, temperature=0.0))
+            parsed = safe_extract(llm.generate(prompt, temperature=0.3))
             out.extend(parsed)
         except Exception as e:
             logging.warning("Sent-5 batch failed (%s); default score 0", e)

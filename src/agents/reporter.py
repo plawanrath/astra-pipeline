@@ -81,7 +81,7 @@ def run(state: dict) -> dict | None:
     )
 
     tic = time.perf_counter()
-    md  = llm.generate(prompt, temperature=0.0)
+    md  = llm.generate(prompt, temperature=0.3)
 
     report_path = "reports/report.md"
     Path("reports").mkdir(exist_ok=True)

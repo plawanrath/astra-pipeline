@@ -26,7 +26,7 @@ def run(state: dict) -> dict:
         chunk  = rows[i : i + batch]
         prompt = PROMPT_TMPL.replace("{{posts_json}}", json.dumps(chunk))
         try:
-            parsed = safe_extract(llm.generate(prompt, temperature=0.0))
+            parsed = safe_extract(llm.generate(prompt, temperature=0.3))
             out.extend(_norm(lab.get("label") if isinstance(lab, dict) else lab, c["post_id"])
                         for lab, c in zip(parsed, chunk))
         except Exception as e:

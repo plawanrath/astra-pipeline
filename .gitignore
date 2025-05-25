@@ -3,5 +3,4 @@ venv/*
 .env
 .venv
 data
-reports
 .DS_Store
