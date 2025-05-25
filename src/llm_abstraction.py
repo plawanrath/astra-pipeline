@@ -8,12 +8,14 @@ Handles RPM/TPM/RPD/TPD buckets, Retry-After ('4.8s', '120ms'), and fallback.
 """
 
 from __future__ import annotations
+from typing import Optional
 import os, re, time, random, logging, json, requests
 from abc import ABC, abstractmethod
 from typing import Dict
 from packaging import version
 from openai import RateLimitError
 from httpx import HTTPStatusError
+from transformers import pipeline, AutoTokenizer, AutoModelForSequenceClassification
 
 # ── helper: retry-after parsing & bucket classifier ─────────────────────────
 BUCKET_RE = re.compile(r"(requests|tokens) per (minute|day)", re.I)
@@ -112,19 +114,47 @@ class OpenAIClient(BaseLLM):
         raise RuntimeError("OpenAI retries exhausted")
 
 # ── HF local / hub ──────────────────────────────────────────────────────────
+def get_hf_sentiment(model_id: str):
+    tok   = AutoTokenizer.from_pretrained(model_id)
+    model = AutoModelForSequenceClassification.from_pretrained(model_id)
+    return pipeline("sentiment-analysis", model=model, tokenizer=tok, device=0)
+
 class HFClient(BaseLLM):
-    name = "hf"
-    def __init__(self, model: str):
-        from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
-        self.model = model or os.getenv("HF_MODEL","meta-llama/Llama-3-8b-instruct")
-        logging.info("Loading HF %s …", self.model)
-        tok = AutoTokenizer.from_pretrained(self.model)
-        mod = AutoModelForCausalLM.from_pretrained(self.model, device_map="auto")
-        self.pipe = pipeline("text-generation", model=mod, tokenizer=tok, max_new_tokens=512)
-    def generate(self, prompt, temperature=0.2, **kw):
-        start=time.perf_counter()
-        txt = self.pipe(prompt,temperature=temperature,**kw)[0]["generated_text"]
-        self._log(start,prompt,txt); return txt
+    """
+    Sentiment model wrapper for Hugging Face `pipeline("sentiment-analysis")`.
+
+    Supports:
+      • 3-class heads  (NEG / NEU / POS) → −1 / 0 / +1
+      • 5-class heads  (Very Neg … Very Pos) → −2 … +2
+      • otherwise returns the raw label string
+    """
+    name = "hf-sentiment"
+
+    def __init__(self, model_name: Optional[str] = None):
+        model_name = os.getenv("HF_MODEL", model_name)
+        self.model_id  = model_name
+        self.pipe      = get_hf_sentiment(model_name)
+
+        # normalise known label sets
+        self.map3 = {"negative": -1, "neutral": 0, "positive": 1,
+                     "NEG": -1, "NEU": 0, "POS": 1}
+        self.map5 = {"very negative": -2, "negative": -1,
+                     "neutral": 0,
+                     "positive": 1, "very positive": 2}
+
+    def generate(self, text: str, **kw) -> str:
+        # strip generation-only args
+        for k in ("temperature", "top_p", "top_k", "max_tokens"):
+            kw.pop(k, None)
+
+        res = self.pipe(text, **kw)[0]          # {'label': 'positive', 'score': 0.98}
+        label = res["label"].lower()
+
+        if label in self.map5:
+            return json.dumps({"score": self.map5[label]})
+        if label in self.map3:
+            return json.dumps({"score": self.map3[label]})
+        return json.dumps({"label": label})     # fallback raw
 
 # ── Meta official Llama API ─────────────────────────────────────────────────
 class LlamaMetaClient(BaseLLM):
@@ -154,7 +184,7 @@ class LlamaMetaClient(BaseLLM):
 CLIENTS = {
     "gpt-4o":OpenAIClient,"gpt-4o-mini":OpenAIClient,"gpt-4":OpenAIClient, "gpt-4.1":OpenAIClient, "o4-mini": OpenAIClient,
     "gpt-3.5":OpenAIClient,"openai":OpenAIClient,
-    "local":HFClient,"hf":HFClient,
+    "local":HFClient, "hf-sentiment": HFClient,
     "llama-meta":LlamaMetaClient
 }
 ALIASES = {
