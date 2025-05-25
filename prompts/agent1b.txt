@@ -1,0 +1,16 @@
+You will be given a JSON array called posts_json.
+For **each** item, output an object with the same post_id and a label:
+  • positive
+  • neutral
+  • negative
+
+Return ONLY a JSON array, no commentary.
+
+Example:
+[
+  {"post_id": "123", "label": "positive"},
+  {"post_id": "456", "label": "neutral"}
+]
+
+posts_json:
+{{posts_json}}

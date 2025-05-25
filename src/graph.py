@@ -1,41 +1,30 @@
 #  Build a fan-out / fan-in graph with LangGraph’s StateGraph builder.
 from langgraph.graph import StateGraph
 from .agents import (
-    collector, filter, sentiment, topics, merge, reporter
+    collector, filter,
+    sentiment5, sentiment3, topics,
+    merge, reporter
 )
 
-
 def build_graph():
-    """
-    Compile and return a runnable LangGraph.
+    g = StateGraph(dict)
 
-    The graph:
-        collector → filter
-                      ↘︎              ↘︎
-                 sentiment       topics
-                      ↘︎              ↘︎
-                           merge
-                             ↓
-                           report
-    """
-    builder = StateGraph(dict)                  # no strict schema for now
+    # register nodes
+    g.add_node("collector",  collector)
+    g.add_node("filter",     filter)
+    g.add_node("sentiment5", sentiment5)
+    g.add_node("sentiment3", sentiment3)
+    g.add_node("topics",     topics)
+    g.add_node("merge",      merge)
+    g.add_node("report",     reporter)
 
-    # ── nodes ───────────────────────────────────────────────────────────────
-    builder.add_node("collector", collector)
-    builder.add_node("filter",    filter)
-    builder.add_node("sentiment", sentiment)
-    builder.add_node("topics",    topics)
-    builder.add_node("merge",     merge)
-    builder.add_node("report",    reporter)
+    # sequential edges  (no parallel writes ⇒ no InvalidUpdateError)
+    g.add_edge("collector",  "filter")
+    g.add_edge("filter",     "sentiment5")
+    g.add_edge("sentiment5", "sentiment3")
+    g.add_edge("sentiment3", "topics")
+    g.add_edge("topics",     "merge")
+    g.add_edge("merge",      "report")
 
-    # ── edges ───────────────────────────────────────────────────────────────
-    builder.add_edge("collector", "filter")
-    builder.add_edge("filter", "sentiment")
-    builder.add_edge("filter", "topics")
-    builder.add_edge("sentiment", "merge")
-    builder.add_edge("topics",    "merge")
-    builder.add_edge("merge",     "report")
-
-    builder.set_entry_point("collector")
-
-    return builder.compile()      # returns a RunnableGraph with .invoke()
+    g.set_entry_point("collector")
+    return g.compile()

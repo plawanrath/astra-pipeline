@@ -7,24 +7,23 @@ import logging
 from pathlib import Path
 import pandas as pd
 
-def run(context: dict) -> dict:
-    # already merged?
-    if "merged_df" in context:
-        return context
+def run(state: dict) -> dict | None:
+    # Wait until prerequisites are available
+    if not all(k in state for k in ("filtered_posts", "sent5", "sent3", "topics")):
+        return None
 
-    ready = all(k in context for k in ("filtered_posts",
-                                       "sentiment_df",
-                                       "topics_df"))
-    if not ready:
-        return context                     # second branch not finished yet
-
-    base = pd.DataFrame(context["filtered_posts"])
-    df   = base.merge(context["sentiment_df"], on="post_id", how="left")\
-               .merge(context["topics_df"],    on="post_id", how="left")
+    base = pd.DataFrame(state["filtered_posts"])
+    df = (
+        base.merge(state["sent5"],  on="post_id", how="left")
+            .merge(state["sent3"],  on="post_id", how="left")
+            .merge(state["topics"], on="post_id", how="left")
+    )
 
     Path("data").mkdir(exist_ok=True)
     df.to_csv("data/merged.csv", index=False)
-    logging.info("Merge: created merged_df with %d rows", len(df))
+    logging.info("Merge: %d rows", len(df))
 
-    context["merged_df"] = df
-    return context
+    # keep everything and add merged_df so downstream nodes still see 'config'
+    new_state = state.copy()
+    new_state["merged_df"] = df
+    return new_state
